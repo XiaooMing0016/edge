@@ -9,4 +9,3 @@ services:
     volumes:
       - ./image:/app/image
       - ./reimage:/app/reimage
-    network_mode: "host"
