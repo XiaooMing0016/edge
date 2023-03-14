@@ -67,6 +67,8 @@ async def image_process(task_id: str, image) -> None:
         buffer.write(await image.read())
     # 上传图片到云节点
     await send_image("http://35.228.80.43", task_id, '')
+    # 删除已上传的图片
+    os.remove(f"reimage/{task_id}_image.jpg")
 
 
 # 创建追踪任务
