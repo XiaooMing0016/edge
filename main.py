@@ -48,8 +48,8 @@ async def root():
 
 
 # 边缘节点创建任务
-@app.get("/task/init/{task_type_name}/{task_id}/{task_name}/{priority}")
-async def init_task(task_type_name: str, task_id: str, task_name: str, priority: str):
+@app.get("/task/init/{task_type_name}/{task_id}/{task_name}/{priority}/{count}")
+async def init_task(task_type_name: str, task_id: str, task_name: str, priority: str, count: int):
     logger.info(f"Received task {task_id} from cloud node，start task planning and reassignment.")
     if not _node_ip:
         logger.warning(f"Node is empty, please register node")
@@ -57,7 +57,7 @@ async def init_task(task_type_name: str, task_id: str, task_name: str, priority:
     for i in range(len(_node_ip)):
         try:
             response = requests.request('GET', f"http://{_node_ip[i]}/task/init/{task_type_name}/{task_id}/{str(i)}/"
-                                               f"{task_name}/{priority}")
+                                               f"{task_name}/{priority}/{count}")
             if response.status_code == 200:
                 logger.info(f"Task {task_id}  assigned to node {str(i)}")
                 _tasks[task_id] = {}
