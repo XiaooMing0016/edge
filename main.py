@@ -104,14 +104,17 @@ async def edge_finish_task(task_id: str, node_id: str):
             response = requests.request('GET', f"http://35.228.80.43/task/finish/{task_id}")
             if response.status_code == 200:
                 logger.info(f"Task {task_id} finished successfully")
+                return {"message": "Task finished successfully"}
             else:
                 logger.error(f"Task {task_id} failed to finish")
+                raise HTTPException(status_code=404, detail=f"Task {task_id} failed to finish")
         except Exception as e:
             logger.error(f"Task {task_id} failed to finish: {e}")
+            raise HTTPException(status_code=404, detail=f"Task {task_id} failed to finish")
 
     else:
         logger.info(f"Task {task_id} node {node_id} is  finished, waiting for other nodes to finish")
-
+        return {"message": f"Task {task_id} node {node_id} is finished, waiting for other nodes to finish"}
 
 
 # 边缘节点停止任务
