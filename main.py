@@ -56,7 +56,7 @@ async def init_task(task_type_name: str, task_id: str, task_name: str, priority:
         raise HTTPException(status_code=404, detail=f"Node is empty, please register node")
     for i in range(4):
         try:
-            response = requests.request('GET', f"{_node_ip[i]}/task/init/{task_type_name}/{str(i)}/"
+            response = requests.request('GET', f"{_node_ip[i]}/task/init/{task_type_name}/{task_id}/{str(i)}/"
                                                f"{task_name}/{priority}")
             if response.status_code == 200:
                 logger.info(f"Task {task_id}  assigned to node {str(i)}")
@@ -84,8 +84,38 @@ async def get_task_status(task_id: str):
         return {'message': 'task_id does not exist'}
 
 
+# 边缘节点完成任务
+@app.get("/task/finish/{task_id}/{node_id}")
+async def edge_finish_task(task_id: str, node_id: str):
+    logger.info(f"Received finish task {task_id} from node {node_id}")
+    if task_id in _tasks:
+        _tasks[task_id][node_id]['task_status'] = 'finished'
+        _tasks[task_id][node_id]['task_end_time'] = (
+            time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+        with open('tasks.json', 'w') as f:
+            json.dump(_tasks, f)
+    else:
+        return {'message': 'task_id does not exist'}
+
+    # 如果所有节点都完成任务，向云端发送任务完成请求
+    if all(_tasks[task_id][node_id]['task_status'] == 'finished' for node_id in _tasks[task_id]):
+        logger.info(f"Task {task_id} finished")
+        try:
+            response = requests.request('GET', f"http://35.228.80.43/task/finish/{task_id}")
+            if response.status_code == 200:
+                logger.info(f"Task {task_id} finished successfully")
+            else:
+                logger.error(f"Task {task_id} failed to finish")
+        except Exception as e:
+            logger.error(f"Task {task_id} failed to finish: {e}")
+
+    else:
+        logger.info(f"Task {task_id} node {node_id} is  finished, waiting for other nodes to finish")
+
+
+
 # 边缘节点停止任务
-@app.get("/task/stop/{task_id}")
+@app.get("/task/end/{task_id}")
 async def edge_stop_task(task_id: str):
     logger.info(f"Received stop task {task_id} from cloud node")
     for i in range(4):
