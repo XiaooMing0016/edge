@@ -90,6 +90,7 @@ async def get_task_status(task_id: str):
 async def edge_finish_task(task_id: str, node_id: str):
     logger.info(f"Received finish task {task_id} from node {node_id}")
     if task_id in _tasks:
+        _tasks[task_id][node_id] = {}
         _tasks[task_id][node_id]['task_status'] = 'finished'
         _tasks[task_id][node_id]['task_end_time'] = (
             time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
