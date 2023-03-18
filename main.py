@@ -60,6 +60,7 @@ async def init_task(task_type_name: str, task_id: str, task_name: str, priority:
                                                f"{task_name}/{priority}")
             if response.status_code == 200:
                 logger.info(f"Task {task_id}  assigned to node {str(i)}")
+                _tasks[task_id] = {}
                 _tasks[task_id][str[i]] = {"task_id": task_id, "task_node": str[i],
                                            "task_name": task_name, "task_type_name": task_type_name,
                                            "task_priority": priority, "task_status": "created",
