@@ -4,7 +4,7 @@ import time
 from typing import Dict
 import requests
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 
 app = FastAPI()
 
@@ -30,12 +30,8 @@ _tasks: Dict[str, Dict] = {
     }
 }
 
-_node_ip = {
-    '0': 'http://34.135.240.45',
-    '1': 'http://34.170.128.54',
-    '2': 'http://34.30.67.124',
-    '3': 'http://34.28.200.46',
-}
+# 边缘节点ip
+_node_ip = []
 
 
 @app.get("/")
@@ -55,6 +51,9 @@ async def root():
 @app.get("/task/init/{task_type_name}/{task_id}/{task_name}/{priority}")
 async def init_task(task_type_name: str, task_id: str, task_name: str, priority: str):
     logger.info(f"Received task {task_id} from cloud node，start task planning and reassignment.")
+    if not _node_ip:
+        logger.warning(f"Node is empty, please register node")
+        raise HTTPException(status_code=404, detail=f"Node is empty, please register node")
     for i in range(4):
         try:
             response = requests.request('GET', f"{_node_ip[i]}/task/init/{task_type_name}/{str(i)}/"
@@ -128,6 +127,39 @@ async def edge_process_data(task_id: str, node_id: str, image_num: str):
         raise HTTPException(status_code=404, detail=f"Task {task_id} node {node_id} "
                                                     f"process data upload cloud node failed, error: {e}")
     return {"message": "Task data processed"}
+
+
+# 边缘设备注册，写入_node_ip并写入node.json文件
+@app.get("/register/{token}")
+async def register(request: Request, token: str):
+    # 判断token是否正确
+    if token != 'helloworld123':
+        raise HTTPException(status_code=404, detail="Token is not correct")
+    # 判断边缘设备是否已经注册
+    if request.client.host in _node_ip:
+        raise HTTPException(status_code=404, detail="Node has been registered")
+    _node_ip.append(request.client.host)
+    logger.info(f"Node {request.client.host} registered successfully")
+    with open('node.json', 'w') as f:
+        json.dump(_node_ip, f)
+    return {"message": "Node registered"}
+
+
+# 边缘设备注销，从_node_ip中删除并写入node.json文件
+@app.get("/unregister/{token}")
+async def unregister(request: Request, token: str):
+    # 判断token是否正确
+    if token != 'helloworld123':
+        raise HTTPException(status_code=404, detail="Token is not correct")
+    # 判断边缘设备是否已经注册
+    if request.client.host not in _node_ip:
+        raise HTTPException(status_code=404, detail="Node has not been registered")
+    _node_ip.remove(request.client.host)
+    logger.info(f"Node {request.client.host} unregistered successfully")
+    with open('node.json', 'w') as f:
+        json.dump(_node_ip, f)
+    return {"message": "Node unregistered"}
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8080)
