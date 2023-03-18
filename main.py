@@ -200,6 +200,7 @@ async def unregister(request: Request, token: str):
 # 查询边缘设备
 @app.get("/node")
 async def get_node():
+    logger.info(f"Query node successfully, node: {_node_ip}")
     return _node_ip
 
 
