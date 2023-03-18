@@ -143,13 +143,13 @@ async def edge_stop_task(task_id: str):
 
 
 # 边缘节点处理数据
-@app.get("/task/process/{task_id}/{node_id}/{image_num}")
-async def edge_process_data(task_id: str, node_id: str, image_num: str):
+@app.get("/task/process/{task_id}/{node_id}/{image_num}/{total_num}")
+async def edge_process_data(task_id: str, node_id: str, image_num: str, total_num: str):
     logger.info(f"Received process data {task_id} from node {node_id}, start processing data")
     time.sleep(2)
     try:
         response = requests.request('GET', f"http://35.228.80.43/task/process/{task_id}/edge/{image_num}/"
-                                           f"{len(_node_ip)}")
+                                           f"{len(_node_ip)}/{total_num}")
         if response.status_code == 200:
             logger.info(f"Task {task_id} node {node_id} process data upload cloud node successfully")
         else:
