@@ -122,7 +122,7 @@ async def edge_finish_task(task_id: str, node_id: str):
 @app.get("/task/end/{task_id}")
 async def edge_stop_task(task_id: str):
     logger.info(f"Received stop task {task_id} from cloud node")
-    for i in range(4):
+    for i in range(len(_node_ip)):
         try:
             response = requests.request('GET', f"http://{_node_ip[i]}/task/end/{task_id}")
             if response.status_code == 200:
