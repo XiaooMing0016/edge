@@ -148,7 +148,8 @@ async def edge_process_data(task_id: str, node_id: str, image_num: str):
     logger.info(f"Received process data {task_id} from node {node_id}, start processing data")
     time.sleep(2)
     try:
-        response = requests.request('GET', f"http://35.228.80.43/task/process/{task_id}/edge/{image_num}/{len(_node_ip)}")
+        response = requests.request('GET', f"http://35.228.80.43/task/process/{task_id}/edge/{image_num}/"
+                                           f"{len(_node_ip)}")
         if response.status_code == 200:
             logger.info(f"Task {task_id} node {node_id} process data upload cloud node successfully")
         else:
@@ -193,6 +194,12 @@ async def unregister(request: Request, token: str):
     with open('node.json', 'w') as f:
         json.dump(_node_ip, f)
     return {"message": "Node unregistered"}
+
+
+# 查询边缘设备
+@app.get("/node")
+async def get_node():
+    return _node_ip
 
 
 if __name__ == "__main__":
