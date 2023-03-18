@@ -5,7 +5,7 @@ FROM python:3.9
 WORKDIR /app
 
 # 复制文件
-COPY requirements.txt main.py task.py ./
+COPY requirements.txt main.py ./
 
 # 安装依赖
 RUN pip install --no-cache-dir -r requirements.txt
