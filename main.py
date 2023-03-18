@@ -54,7 +54,7 @@ async def init_task(task_type_name: str, task_id: str, task_name: str, priority:
     if not _node_ip:
         logger.warning(f"Node is empty, please register node")
         raise HTTPException(status_code=404, detail=f"Node is empty, please register node")
-    for i in range(len(_tasks[task_id])):
+    for i in range(len(_node_ip)):
         try:
             response = requests.request('GET', f"http://{_node_ip[i]}/task/init/{task_type_name}/{task_id}/{str(i)}/"
                                                f"{task_name}/{priority}")
@@ -122,7 +122,7 @@ async def edge_finish_task(task_id: str, node_id: str):
 @app.get("/task/end/{task_id}")
 async def edge_stop_task(task_id: str):
     logger.info(f"Received stop task {task_id} from cloud node")
-    for i in range(len(_tasks[task_id])):
+    for i in range(len(_node_ip)):
         try:
             response = requests.request('GET', f"http://{_node_ip[i]}/task/end/{task_id}")
             if response.status_code == 200:
